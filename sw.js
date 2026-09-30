@@ -1,7 +1,7 @@
 /* 家园沟通站 · Service Worker（离线管家）
  * 升级代码后必须把 CACHE_NAME 的版本号 +1（v1 → v2），
  * 否则用户手机拿到的还是旧缓存。 */
-const CACHE_NAME = 'jiayuan-v1'
+const CACHE_NAME = 'jiayuan-v2'
 const ASSETS = [
   './',
   './index.html',

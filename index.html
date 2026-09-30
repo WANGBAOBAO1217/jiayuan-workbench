@@ -96,6 +96,37 @@
     .tagpick { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
     .tagpick .chip.selected { background: #0072BC; border-color: #0072BC; color: #fff; }
 
+    /* 录音 */
+    .rec-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 6px; }
+    .rec-btn {
+      width: auto; padding: 11px 18px; border: none; border-radius: 30px; cursor: pointer;
+      background: #F5F5F5; color: #5D4037; font-size: 15px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .rec-btn.recording { background: #E53935; color: #fff; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,.5);} 50%{box-shadow:0 0 0 10px rgba(229,57,53,0);} }
+    .rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #9E9E9E; display:inline-block; }
+    .rec-btn.recording .rec-dot { background: #fff; }
+    .rec-status { font-size: 13px; color: #A1887F; }
+    .audio-ply {
+      width: auto; padding: 7px 12px; border: 1px solid #E0C97F; background: #FFFDF5;
+      border-radius: 8px; font-size: 13px; color: #0072BC; cursor: pointer;
+    }
+
+    /* 照片 */
+    .photo-upload { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .photo-btn {
+      width: auto; padding: 11px 18px; border: 1.5px dashed #E0C97F; background: #FFFDF5;
+      border-radius: 12px; font-size: 14px; color: #5D4037; cursor: pointer; display: inline-block;
+    }
+    .thumb-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .thumb { position: relative; width: 84px; height: 84px; }
+    .thumb img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid #E0C97F; }
+    .thumb .x { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; line-height: 18px; text-align: center; background: #D32F2F; color: #fff; border-radius: 50%; font-size: 13px; cursor: pointer; }
+    .record-photos { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .record-photos img { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #EEE2C3; }
+    .audio-inline { margin: 8px 0; }
+
     /* 生活开关 */
     .sect-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -176,6 +207,18 @@
       <div class="tagpick" id="r-tags"></div>
       <label>孩子说了什么 / 做了什么？</label>
       <textarea id="r-text" rows="3" placeholder="例：我在建构区搭了一个大城堡，用积木搭的，还给它搭了围墙。"></textarea>
+      <label>录音（可选）</label>
+      <div class="rec-bar">
+        <button type="button" id="rec-btn" class="rec-btn" onclick="toggleRecord()"><span class="rec-dot"></span><span id="rec-label">开始录音</span></button>
+        <span class="rec-status" id="rec-status"></span>
+      </div>
+      <div id="rec-audio" class="audio-inline"></div>
+      <label>照片（可选，可多张）</label>
+      <div class="photo-upload">
+        <label class="photo-btn">＋ 选择照片<input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="handlePhotos(this)"></label>
+        <span class="rec-status" id="photo-count"></span>
+      </div>
+      <div class="thumb-grid" id="photo-preview"></div>
       <button class="btn" onclick="saveRecord()">保存记录</button>
     </div>
 
@@ -369,6 +412,206 @@ function emptyDB() {
 }
 function save(db) { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
 
+/* ============================================================
+   媒体存储（音频/照片）：IndexedDB，比 localStorage 容量大
+   ============================================================ */
+var MEDIA_DB='jiayuan-media', MEDIA_STORE='files';
+function openMediaDB(){
+  return new Promise(function(resolve,reject){
+    var req=indexedDB.open(MEDIA_DB,1);
+    req.onupgradeneeded=function(e){ var d=e.target.result; if(!d.objectStoreNames.contains(MEDIA_STORE)) d.createObjectStore(MEDIA_STORE,{keyPath:'id'}); };
+    req.onsuccess=function(e){ resolve(e.target.result); };
+    req.onerror=function(e){ reject(e.target.error); };
+  });
+}
+function putMedia(id, blob, mime, kind){
+  return openMediaDB().then(function(db){
+    return new Promise(function(resolve,reject){
+      var tx=db.transaction(MEDIA_STORE,'readwrite');
+      tx.objectStore(MEDIA_STORE).put({id:id, blob:blob, mime:mime, kind:kind, createdAt:Date.now()});
+      tx.oncomplete=function(){ resolve(id); };
+      tx.onerror=function(e){ reject(e.target.error); };
+    });
+  });
+}
+function getMedia(id){
+  return openMediaDB().then(function(db){
+    return new Promise(function(resolve,reject){
+      var tx=db.transaction(MEDIA_STORE,'readonly');
+      var req=tx.objectStore(MEDIA_STORE).get(id);
+      req.onsuccess=function(){ resolve(req.result||null); };
+      req.onerror=function(e){ reject(e.target.error); };
+    });
+  });
+}
+function deleteMedia(id){
+  return openMediaDB().then(function(db){
+    return new Promise(function(resolve){
+      var tx=db.transaction(MEDIA_STORE,'readwrite');
+      tx.objectStore(MEDIA_STORE).delete(id);
+      tx.oncomplete=function(){ resolve(); };
+    });
+  });
+}
+function blobToBase64(blob){
+  return new Promise(function(resolve){
+    var fr=new FileReader(); fr.onloadend=function(){ resolve(fr.result); }; fr.readAsDataURL(blob);
+  });
+}
+function base64ToBlob(dataUrl, mime){
+  var parts=dataUrl.split(','); var bin=atob(parts[1]);
+  var arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime||'application/octet-stream'});
+}
+
+/* ============================================================
+   录音（MediaRecorder）
+   ============================================================ */
+var recState={ recording:false, stream:null, recorder:null, chunks:[], audioId:null, timer:null, seconds:0 };
+function setRecLabel(txt, recording){
+  document.getElementById('rec-label').textContent=txt;
+  document.getElementById('rec-btn').classList.toggle('recording', recording);
+}
+function toggleRecord(){
+  if(recState.recording){ stopRecording(); return; }
+  startRecording();
+}
+function startRecording(){
+  if(!navigator.mediaDevices || !window.MediaRecorder){ toast('当前浏览器不支持录音，请用最新版Chrome/Safari'); return; }
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+    recState.stream=stream;
+    var mime = (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm')) ? 'audio/webm' : '';
+    recState.recorder=new MediaRecorder(stream, mime?{mimeType:mime}:undefined);
+    recState.chunks=[];
+    recState.recorder.ondataavailable=function(e){ if(e.data && e.data.size>0) recState.chunks.push(e.data); };
+    recState.recorder.onstop=function(){
+      recState.stream.getTracks().forEach(function(t){ t.stop(); });
+      clearInterval(recState.timer);
+      var blob=new Blob(recState.chunks,{ type: recState.recorder.mimeType||'audio/webm' });
+      recState.chunks=[];
+      // 存入 IndexedDB
+      var id='audio-'+Date.now();
+      putMedia(id, blob, blob.type, 'audio').then(function(){
+        recState.audioId=id;
+        setRecLabel('已录音 '+recState.seconds+'s', false);
+        document.getElementById('rec-status').textContent='录音已就绪，保存记录时一并存入';
+        renderRecAudio();
+      }).catch(function(){ toast('录音保存失败'); recState.audioId=null; });
+    };
+    recState.recorder.start();
+    recState.recording=true;
+    recState.seconds=0;
+    setRecLabel('结束录音', true);
+    document.getElementById('rec-status').textContent='正在录音… 点按钮结束';
+    recState.timer=setInterval(function(){ recState.seconds++; document.getElementById('rec-status').textContent='正在录音… '+recState.seconds+'s'; },1000);
+  }).catch(function(){ toast('未获得麦克风权限，无法录音（浏览器会弹授权框，请允许）'); });
+}
+function stopRecording(){
+  try{ recState.recorder.stop(); }catch(e){}
+  recState.recording=false;
+}
+function renderRecAudio(){
+  var box=document.getElementById('rec-audio');
+  if(recState.audioId){
+    box.innerHTML='<button class="audio-ply" onclick="playAudio(\''+recState.audioId+'\')">▶ 试听录音</button> <button class="mini-btn" onclick="clearPendingAudio()">✕ 移除</button>';
+  } else { box.innerHTML=''; }
+}
+function clearPendingAudio(){
+  if(recState.audioId){ deleteMedia(recState.audioId); }
+  recState.audioId=null; recState.seconds=0;
+  setRecLabel('开始录音', false);
+  document.getElementById('rec-status').textContent='';
+  renderRecAudio();
+}
+function playAudio(id){
+  getMedia(id).then(function(m){
+    if(!m){ toast('音频不存在'); return; }
+    var url=URL.createObjectURL(m.blob);
+    var audio=new Audio(url);
+    audio.onended=function(){ URL.revokeObjectURL(url); };
+    audio.play().catch(function(){ toast('播放失败'); });
+  });
+}
+
+/* ============================================================
+   照片上传（压缩后存 IndexedDB）
+   ============================================================ */
+var pendingImages=[];
+function handlePhotos(input){
+  var files=input.files;
+  if(!files || !files.length) return;
+  Array.prototype.forEach.call(files, function(file){
+    if(!file.type || file.type.indexOf('image/')!==0){ toast('只能上传图片'); return; }
+    compressImage(file).then(function(result){
+      var id='img-'+Date.now()+'-'+Math.floor(Math.random()*1000);
+      return putMedia(id, result.blob, result.blob.type, 'image').then(function(){ pendingImages.push(id); renderPhotoPreview(); });
+    }).catch(function(){ toast('图片处理失败'); });
+  });
+  input.value='';
+}
+function compressImage(file){
+  return new Promise(function(resolve,reject){
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      var MAX=900;
+      var w=img.width, h=img.height;
+      if(w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
+      if(h>MAX){ w=Math.round(w*MAX/h); h=MAX; }
+      var canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(function(blob){
+        URL.revokeObjectURL(url);
+        resolve({blob:blob||file});
+      }, 'image/jpeg', 0.72);
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); reject(); };
+    img.src=url;
+  });
+}
+function renderPhotoPreview(){
+  var grid=document.getElementById('photo-preview');
+  document.getElementById('photo-count').textContent=pendingImages.length?('已选 '+pendingImages.length+' 张'):'';
+  if(pendingImages.length===0){ grid.innerHTML=''; return; }
+  grid.innerHTML=pendingImages.map(function(id){
+    return '<div class="thumb" data-id="'+id+'"><img data-src="'+id+'"><span class="x" onclick="removePendingImage(\''+id+'\')">✕</span></div>';
+  }).join('');
+  // 异步填充缩略图
+  pendingImages.forEach(function(id){
+    getMedia(id).then(function(m){
+      if(!m) return;
+      var url=URL.createObjectURL(m.blob);
+      var img=document.querySelector('.thumb[data-id="'+id+'"] img');
+      if(img) img.src=url;
+    });
+  });
+}
+function removePendingImage(id){
+  deleteMedia(id);
+  pendingImages=pendingImages.filter(function(x){ return x!==id; });
+  renderPhotoPreview();
+}
+// 取消当前未保存的媒体（真删除）
+function clearPendingMedia(){
+  if(recState.audioId) deleteMedia(recState.audioId);
+  recState.audioId=null; recState.seconds=0; setRecLabel('开始录音', false);
+  document.getElementById('rec-status').textContent='';
+  renderRecAudio();
+  pendingImages.forEach(function(id){ deleteMedia(id); });
+  pendingImages=[];
+  renderPhotoPreview();
+}
+// 保存后只重置界面状态，不删除已随记录保存的媒体
+function resetPendingMedia(){
+  recState.audioId=null; recState.seconds=0; setRecLabel('开始录音', false);
+  document.getElementById('rec-status').textContent='';
+  renderRecAudio();
+  pendingImages=[];
+  renderPhotoPreview();
+}
+
 /* ---- 日期工具（本地时区，避免UTC偏移一天） ---- */
 function two(n){ return (n<10?'0':'')+n; }
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate()); }
@@ -421,9 +664,11 @@ function addChild(){
 function deleteChild(id){
   var db=load();
   if(!confirm('确定删除这个孩子？其所有记录也会一并删除。')) return;
+  var gone=db.records.filter(function(r){ return r.childId===id; });
   db.children=db.children.filter(function(c){ return c.id!==id; });
   db.records=db.records.filter(function(r){ return r.childId!==id; });
   save(db);
+  gone.forEach(function(r){ deleteRecordMedia(r); });
   renderAll();
   toast('已删除');
 }
@@ -480,18 +725,22 @@ function saveRecord(){
   var childName=childSel.options[childSel.selectedIndex].text.split('（')[0];
   var area=document.getElementById('r-area').value;
   var text=document.getElementById('r-text').value.trim();
-  if(!text){ toast('请填写孩子说了什么/做了什么'); return; }
+  if(!text && !recState.audioId && pendingImages.length===0){ toast('请填写内容，或录音/上传照片'); return; }
   var tags=[];
   document.querySelectorAll('#r-tags .chip.selected').forEach(function(c){ tags.push(c.getAttribute('data-tag')); });
   var db=load();
   db.records.push({
     id: Date.now().toString()+Math.floor(Math.random()*1000),
     childId:childId, childName:childName, area:area, text:text, tags:tags,
-    date:todayStr(), time:nowTime(), teacherComment:''
+    date:todayStr(), time:nowTime(), teacherComment:'',
+    audioId:recState.audioId||null,
+    imageIds:(pendingImages.length?pendingImages.slice():[])
   });
   save(db);
+  // 清空表单与媒体状态
   document.getElementById('r-text').value='';
   document.querySelectorAll('#r-tags .chip.selected').forEach(function(c){ c.classList.remove('selected'); });
+  resetPendingMedia();
   renderRecords();
   toast('记录已保存 ✅');
 }
@@ -535,15 +784,42 @@ function renderRecords(){
     (r.tags||[]).forEach(function(t){ tags+='<span class="tag">'+t+'</span>'; });
     var comment='';
     if(r.teacherComment){ comment='<div class="note" style="margin-top:6px">💬 老师评语：'+r.teacherComment+'</div>'; }
+    var audioHtml='';
+    if(r.audioId){ audioHtml='<div class="audio-inline"><button class="audio-ply" onclick="playAudio(\''+r.audioId+'\')">▶ 播放录音</button></div>'; }
+    var photoHtml='';
+    if(r.imageIds && r.imageIds.length){
+      photoHtml='<div class="record-photos" data-rid="'+r.id+'">'+(r.imageIds.map(function(){return '';}).join(''))+'</div>';
+    }
     return '<div class="card record-item">'+
       '<div class="meta"><b>'+r.childName+'</b><span>'+r.time+'</span></div>'+
       '<div class="txt">“'+r.text+'”</div>'+
-      '<div>'+tags+'</div>'+comment+
+      '<div>'+tags+'</div>'+
+      audioHtml+photoHtml+comment+
       '<div class="record-actions" style="margin-top:8px">'+
         '<button class="mini-btn" onclick="editComment(\''+r.id+'\')">评语</button>'+
         '<button class="mini-btn danger" onclick="deleteRecord(\''+r.id+'\')">删除</button>'+
       '</div></div>';
   }).join('');
+  // 异步填充照片缩略图
+  list.forEach(function(r){
+    if(r.imageIds && r.imageIds.length){
+      var box=document.querySelector('.record-photos[data-rid="'+r.id+'"]');
+      if(box){
+        var html='';
+        var loaded=0;
+        r.imageIds.forEach(function(mid){
+          getMedia(mid).then(function(m){
+            if(!m) return;
+            var url=URL.createObjectURL(m.blob);
+            var img='<img src="'+url+'" alt="照片">';
+            html+=(html===''?img:img);
+            loaded++;
+            if(loaded===r.imageIds.length) box.innerHTML=html;
+          });
+        });
+      }
+    }
+  });
 }
 function editComment(id){
   var db=load();
@@ -559,10 +835,16 @@ function editComment(id){
 function deleteRecord(id){
   var db=load();
   if(!confirm('确定删除这条记录？')) return;
-  db.records=db.records.filter(function(r){ return r.id!==id; });
+  var r=db.records.find(function(x){ return x.id===id; });
+  db.records=db.records.filter(function(x){ return x.id!==id; });
   save(db);
+  if(r){ deleteRecordMedia(r); }
   renderRecords();
   toast('已删除');
+}
+function deleteRecordMedia(r){
+  if(r.audioId) deleteMedia(r.audioId);
+  if(r.imageIds) r.imageIds.forEach(function(mid){ deleteMedia(mid); });
 }
 
 /* ============================================================
@@ -964,14 +1246,37 @@ function resetTags(){
    ============================================================ */
 function exportData(){
   var db=load();
-  var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url; a.download='家园沟通站备份-'+todayStr()+'.json';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('已导出备份文件，请妥善保存');
+  toast('正在打包（含音频/照片）…');
+  collectAllMedia(db).then(function(mediaMap){
+    var payload=JSON.parse(JSON.stringify(db));
+    payload.media=mediaMap;
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download='家园沟通站备份-'+todayStr()+'.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('已导出备份（含录音与照片），请妥善保存');
+  }).catch(function(){ toast('导出失败'); });
+}
+// 收集记录引用的所有媒体，转 base64 便于放进 JSON
+function collectAllMedia(db){
+  var ids=[];
+  db.records.forEach(function(r){
+    if(r.audioId) ids.push(r.audioId);
+    if(r.imageIds) r.imageIds.forEach(function(m){ ids.push(m); });
+  });
+  var map={};
+  var chain=Promise.resolve();
+  ids.forEach(function(id){
+    chain=chain.then(function(){
+      return getMedia(id).then(function(m){
+        if(m) return blobToBase64(m.blob).then(function(b64){ map[id]={data:b64, mime:m.mime, kind:m.kind}; });
+      });
+    });
+  });
+  return chain.then(function(){ return map; });
 }
 function importData(e){
   var file=e.target.files[0];
@@ -983,9 +1288,23 @@ function importData(e){
       if(!obj || typeof obj!=='object' || !Array.isArray(obj.children) || !Array.isArray(obj.records)){
         toast('备份文件格式不正确'); return;
       }
-      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
-      renderAll();
-      toast('导入成功 ✅');
+      // 恢复媒体到 IndexedDB
+      var media=obj.media||{};
+      var keys=Object.keys(media);
+      var chain=Promise.resolve();
+      keys.forEach(function(id){
+        var m=media[id];
+        chain=chain.then(function(){
+          var blob=base64ToBlob(m.data, m.mime);
+          return putMedia(id, blob, m.mime, m.kind||'');
+        });
+      });
+      chain.then(function(){
+        delete obj.media;
+        localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+        renderAll();
+        toast('导入成功 ✅'+(keys.length?('（含'+keys.length+'个媒体）'):''));
+      });
     }catch(err){ toast('导入失败：文件不是有效JSON'); }
   };
   reader.readAsText(file);
@@ -994,6 +1313,12 @@ function importData(e){
 function clearData(){
   if(!confirm('确定清空本机所有数据？此操作不可恢复（建议先导出备份）。')) return;
   localStorage.removeItem(STORE_KEY);
+  // 清空媒体库
+  openMediaDB().then(function(db){
+    var tx=db.transaction(MEDIA_STORE,'readwrite');
+    tx.objectStore(MEDIA_STORE).clear();
+  }).catch(function(){});
+  clearPendingMedia();
   renderAll();
   toast('已清空');
 }
