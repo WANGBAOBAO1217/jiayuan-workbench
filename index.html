@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FFD700">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>家园沟通站</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #FFF8E1;
+      color: #5D4037;
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      padding-bottom: 74px;
+      min-height: 100vh;
+    }
+    /* 顶部 */
+    .app-header {
+      background: linear-gradient(135deg, #FFD700 0%, #FFC400 100%);
+      padding: 20px 18px 16px;
+      color: #5D4037;
+    }
+    .app-header h1 { margin: 0; font-size: 22px; }
+    .app-header p { margin: 6px 0 0; font-size: 13px; opacity: .85; }
+    .page { display: none; padding: 14px 12px 20px; }
+    .page.active { display: block; }
+
+    /* 卡片 */
+    .card {
+      background: #fff; border-radius: 16px; padding: 16px;
+      margin-bottom: 14px; box-shadow: 0 2px 8px rgba(93,64,55,.08);
+    }
+    .card h3 { margin: 0 0 12px; font-size: 16px; }
+    .card h4 { margin: 14px 0 8px; font-size: 14px; color: #0072BC; }
+
+    label { font-size: 13px; color: #8D6E63; display: block; margin: 8px 0 4px; }
+    input, textarea, select {
+      width: 100%; box-sizing: border-box; padding: 11px;
+      border: 1.5px solid #E0C97F; border-radius: 10px; font-size: 16px;
+      margin: 2px 0 6px; background: #FFFDF5; color: #5D4037;
+    }
+    textarea { resize: vertical; line-height: 1.5; }
+    select { appearance: none; background-image: linear-gradient(45deg,transparent 50%,#8D6E63 50%),linear-gradient(135deg,#8D6E63 50%,transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+    .btn {
+      display: inline-block; width: 100%; padding: 13px; border: none; border-radius: 12px;
+      background: #FFD700; color: #5D4037; font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: filter .15s;
+    }
+    .btn:active { filter: brightness(.94); }
+    .btn:disabled { opacity: .5; }
+    .btn.blue { background: #0072BC; color: #fff; }
+    .btn.green { background: #43A047; color: #fff; }
+    .btn.gray { background: #ECEFF1; color: #5D4037; }
+    .btn.sm { width: auto; padding: 8px 14px; font-size: 14px; border-radius: 9px; }
+
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+
+    /* 底部导航 */
+    .tabbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; background: #fff; border-top: 1px solid #eee;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 50;
+    }
+    .tabbar button {
+      flex: 1; background: none; border: none; padding: 9px 0 7px;
+      font-size: 12px; color: #8D6E63; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+    }
+    .tabbar button .ic { font-size: 20px; line-height: 1; }
+    .tabbar button.active { color: #FF8F00; font-weight: 700; }
+
+    /* 记录 */
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .chip {
+      padding: 6px 13px; border-radius: 20px; background: #fff; border: 1.5px solid #E0C97F;
+      font-size: 13px; color: #8D6E63; cursor: pointer;
+    }
+    .chip.active { background: #FFD700; border-color: #FFD700; color: #5D4037; font-weight: 700; }
+    .record-item { border-left: 4px solid #FFD700; }
+    .record-item .meta { color: #A1887F; font-size: 12px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .record-item .txt { font-size: 15px; line-height: 1.55; margin: 0 0 8px; }
+    .tag { display: inline-block; background: #E8F4FB; color: #0072BC; font-size: 12px; border-radius: 6px; padding: 2px 8px; margin: 2px 4px 2px 0; }
+    .tag.area { background: #FFF3CD; color: #B8860B; }
+    .record-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mini-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid #E0C97F; background: #FFFDF5; color: #5D4037; font-size: 13px; cursor: pointer; }
+    .mini-btn.danger { color: #D32F2F; border-color: #F5C6C6; }
+    .empty { color: #BDB5A8; text-align: center; padding: 22px 0; font-size: 14px; }
+
+    /* 标签选择 chips */
+    .tagpick { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
+    .tagpick .chip.selected { background: #0072BC; border-color: #0072BC; color: #fff; }
+
+    /* 生活开关 */
+    .sect-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 2px; border-bottom: 1px solid #F1EAD9;
+    }
+    .sect-row:last-child { border-bottom: none; }
+    .sect-name { font-size: 15px; }
+    .sect-sub { font-size: 12px; color: #A1887F; }
+    .switch { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0; background: #CCC; border-radius: 28px; transition: .2s;
+    }
+    .slider:before {
+      content: ""; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: .2s;
+    }
+    .switch input:checked + .slider { background: #34C759; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
+    /* 分析 */
+    .domain-block { border: 1px solid #E0C97F; border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #FFFDF5; }
+    .domain-block .d-title { font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .grade-group { display: flex; gap: 6px; }
+    .grade-opt {
+      flex: 1; text-align: center; padding: 8px 0; border: 1.5px solid #E0C97F; border-radius: 8px;
+      font-size: 14px; color: #8D6E63; cursor: pointer; background: #fff;
+    }
+    .grade-opt.active { background: #0072BC; border-color: #0072BC; color: #fff; font-weight: 700; }
+    .radar-wrap { display: flex; justify-content: center; }
+    canvas#radar { width: 100%; max-width: 320px; }
+
+    /* 周报 */
+    .period-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
+    .report-out { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+    .preview-block { background: #FFFDF5; border: 1px solid #E0C97F; border-radius: 12px; padding: 14px; }
+    .preview-block .p-title { font-weight: 700; color: #0072BC; margin: 12px 0 6px; font-size: 14px; }
+    .checklist { margin: 4px 0 8px; }
+    .checklist label { font-size: 14px; display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+    .checklist input { width: 18px; height: 18px; margin: 0; }
+
+    /* 我的 */
+    .tag-mgr .cat-title { font-weight: 700; margin: 14px 0 6px; color: #0072BC; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 6px; background: #E8F4FB; color: #0072BC; border-radius: 8px; padding: 5px 10px; font-size: 13px; }
+    .tag-chip .x { cursor: pointer; color: #0072BC; font-weight: 700; }
+    .kid-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 2px; border-bottom: 1px solid #F1EAD9; }
+    .kid-row .info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 18px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+
+    .note { font-size: 12px; color: #A1887F; line-height: 1.6; margin-top: 8px; }
+    .toast {
+      position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+      background: rgba(93,64,55,.92); color: #fff; padding: 10px 18px; border-radius: 24px;
+      font-size: 14px; z-index: 99; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 86%; text-align: center;
+    }
+    .toast.show { opacity: 1; }
+    input[type=date] { font-size: 15px; }
+  </style>
+</head>
+<body>
+
+  <div class="app-header">
+    <h1>🏠 家园沟通站</h1>
+    <p>孩子说 → 老师记 → 家长看 ｜ 数据仅存于本机，请每周备份</p>
+  </div>
+
+  <!-- ============ 记录页 ============ -->
+  <div id="page-record" class="page active">
+    <div class="card">
+      <h3>📝 新增表征记录</h3>
+      <div class="row">
+        <div><label>孩子</label><select id="r-child"></select></div>
+        <div><label>区域</label><select id="r-area"></select></div>
+      </div>
+      <label>快捷标签（点选）</label>
+      <div class="tagpick" id="r-tags"></div>
+      <label>孩子说了什么 / 做了什么？</label>
+      <textarea id="r-text" rows="3" placeholder="例：我在建构区搭了一个大城堡，用积木搭的，还给它搭了围墙。"></textarea>
+      <button class="btn" onclick="saveRecord()">保存记录</button>
+    </div>
+
+    <div class="card">
+      <h3>🕒 今日记录</h3>
+      <div class="filter-chips" id="rec-filter"></div>
+      <div id="record-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ 分析页 ============ -->
+  <div id="page-analysis" class="page">
+    <div class="card">
+      <h3>📊 能力发展分析</h3>
+      <label>选择孩子</label>
+      <select id="a-child"></select>
+      <button class="btn blue sm" style="margin-top:6px" onclick="autoFromRecords()">从本周记录自动建议</button>
+      <div id="a-domains"></div>
+      <div class="radar-wrap"><canvas id="radar" height="320"></canvas></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn green" onclick="saveAnalysis()">保存分析</button>
+        <button class="btn gray" onclick="loadAnalysisInto(selectedChildId(), true)">撤销</button>
+      </div>
+    </div>
+    <div class="card">
+      <h4>能力发展摘要</h4>
+      <div id="a-summary" class="note">选择孩子并设置五个领域评级后，这里会显示整体评级、优势与建议。</div>
+    </div>
+  </div>
+
+  <!-- ============ 生活页 ============ -->
+  <div id="page-life" class="page">
+    <div class="card">
+      <h3>🏃 一日生活环节</h3>
+      <label>日期</label>
+      <input type="date" id="l-date">
+      <p style="font-size:13px;color:#A1887F" id="l-count"></p>
+      <div id="l-sections"></div>
+      <div class="note">有照片的环节可随时开关，家长端实时反映。此处为老师端本机记录/开放标记。</div>
+    </div>
+  </div>
+
+  <!-- ============ 周报页 ============ -->
+  <div id="page-report" class="page">
+    <div class="card">
+      <h3>📑 生成发展周报</h3>
+      <div class="row">
+        <div><label>孩子</label><select id="w-child"></select></div>
+        <div><label>时段</label><select id="w-period">
+          <option value="week">本周</option>
+          <option value="lastweek">上周</option>
+          <option value="month">本月</option>
+          <option value="custom">自定义</option>
+        </select></div>
+      </div>
+      <div class="row" id="w-custom" style="display:none;margin-top:4px">
+        <div><label>开始</label><input type="date" id="w-start"></div>
+        <div><label>结束</label><input type="date" id="w-end"></div>
+      </div>
+      <label style="margin-top:10px">生成内容（可逐项选择）</label>
+      <div class="checklist">
+        <label><input type="checkbox" id="c-orig" checked> 表征原文</label>
+        <label><input type="checkbox" id="c-interest" checked> 本周兴趣偏好</label>
+        <label><input type="checkbox" id="c-analysis" checked> 能力发展分析（基于《指南》）</label>
+        <label><input type="checkbox" id="c-advice" checked> 家园共育建议</label>
+        <label><input type="checkbox" id="c-note" checked> 教师寄语</label>
+      </div>
+      <label>教师寄语（可选）</label>
+      <input type="text" id="w-note" placeholder="例：朵朵这周进步很大，语言表达越来越完整。">
+      <div class="row">
+        <button class="btn blue" onclick="genReport()">生成周报</button>
+        <button class="btn green" onclick="copyReport()">复制周报</button>
+      </div>
+      <textarea id="w-out" rows="12" readonly style="margin-top:10px"></textarea>
+    </div>
+
+    <div class="card">
+      <h3>👨‍👩‍👧 家长端预览（老师端可见）</h3>
+      <div class="preview-block" id="preview">
+        <div class="p-title">本周兴趣偏好</div>
+        <div id="pv-interest" class="note">—</div>
+        <div class="p-title">五大领域发展雷达图</div>
+        <div class="radar-wrap"><canvas id="radar-pv" height="300"></canvas></div>
+        <div class="p-title">家园共育建议</div>
+        <div id="pv-advice" class="note">—</div>
+        <div class="p-title">教师寄语</div>
+        <div id="pv-note" class="note">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 我的页 ============ -->
+  <div id="page-mine" class="page">
+    <div class="card">
+      <h3>👶 孩子管理</h3>
+      <div class="row">
+        <div><input id="k-name" placeholder="孩子名字，如：糖糖"></div>
+        <div><input id="k-grade" placeholder="年级，如：中班" style="width:100%"></div>
+      </div>
+      <button class="btn" onclick="addChild()">添加孩子</button>
+      <div id="kid-list" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card tag-mgr">
+      <h3>🏷️ 快捷标签管理 <span style="font-size:12px;color:#A1887F">（班级可自定义）</span></h3>
+      <div id="tag-manager"></div>
+      <button class="btn gray sm" onclick="resetTags()">重置默认标签</button>
+    </div>
+
+    <div class="card">
+      <h3>📦 数据备份</h3>
+      <div class="note">方式B的数据只存在这台手机/这个浏览器。换手机、清浏览器数据都会清零，请每周备份一次。</div>
+      <div class="btn-row">
+        <button class="btn blue sm" onclick="exportData()">导出备份</button>
+        <label class="btn gray sm" style="text-align:center;margin:0">导入备份<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      </div>
+      <div class="btn-row">
+        <button class="btn gray sm" onclick="clearData()">清空所有数据</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📱 安装到手机桌面</h3>
+      <div class="note">
+        · 部署到 https 网址后（如 GitHub Pages），用手机浏览器打开即可。<br>
+        · iPhone：用 Safari 打开 → 点分享 → 添加到主屏幕。<br>
+        · Android：用 Chrome 打开 → 右上角菜单 → 安装应用 / 添加到主屏幕。<br>
+        · 点图标全屏打开、飞行模式也能用。
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="tabbar">
+    <button class="active" onclick="switchTab('record', this)"><span class="ic">📝</span>记录</button>
+    <button onclick="switchTab('analysis', this)"><span class="ic">📊</span>分析</button>
+    <button onclick="switchTab('life', this)"><span class="ic">🏃</span>生活</button>
+    <button onclick="switchTab('report', this)"><span class="ic">📑</span>周报</button>
+    <button onclick="switchTab('mine', this)"><span class="ic">⚙️</span>我的</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   家园沟通站 · 方式B 工作台（PWA）
+   数据层：localStorage（键 jiayuan-data）
+   ============================================================ */
+var STORE_KEY = 'jiayuan-data';
+
+/* ---- 常量 ---- */
+var AREAS = ['建构区','美工区','角色区','益智区','阅读区','科学区'];
+var DEFAULT_SECTIONS = ['入园晨检','早餐','晨间活动','集体教学','区域活动','午餐','午睡','下午活动','晚餐','离园准备'];
+var DOMAINS = [
+  { key:'health',  name:'健康', color:'#FF8F00', hint:'生活自理·大肌肉·小肌肉' },
+  { key:'language',name:'语言', color:'#0072BC', hint:'倾听·表达·阅读' },
+  { key:'social', name:'社会', color:'#43A047', hint:'合作·分享·规则' },
+  { key:'science',name:'科学', color:'#7B1FA2', hint:'观察·分类·数概念' },
+  { key:'art',    name:'艺术', color:'#E91E63', hint:'美术·音乐·创造表达' }
+];
+var GRADE_VALUES = { 'A+':97,'A':90,'A-':85,'B+':80,'B':75,'B-':70,'C+':65,'C':58,'C-':50 };
+var GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-'];
+var DEFAULT_TAGS = {
+  '餐点':['好好吃饭','需要鼓励'],
+  '户外':['跑跳','团队游戏'],
+  '区域':['建构','美工','角色','益智'],
+  '情绪':['开心','平静','需要关注'],
+  '社交':['合作','分享','冲突']
+};
+/* 区域 → 五大领域（用于自动建议雷达） */
+var AREA_TO_DOMAIN = {
+  '建构区':'health', '美工区':'art', '角色区':'social',
+  '益智区':'science', '阅读区':'language', '科学区':'science'
+};
+
+/* ---- 数据仓库 ---- */
+function load() {
+  try {
+    var d = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (!d) return emptyDB();
+    d.children = d.children || [];
+    d.records = d.records || [];
+    d.daily = d.daily || {};
+    d.analysis = d.analysis || {};
+    d.tags = d.tags || JSON.parse(JSON.stringify(DEFAULT_TAGS));
+    return d;
+  } catch(e) { return emptyDB(); }
+}
+function emptyDB() {
+  return { children:[], records:[], daily:{}, analysis:{}, tags: JSON.parse(JSON.stringify(DEFAULT_TAGS)), teacherName:'' };
+}
+function save(db) { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+
+/* ---- 日期工具（本地时区，避免UTC偏移一天） ---- */
+function two(n){ return (n<10?'0':'')+n; }
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate()); }
+function nowTime(){ var d=new Date(); return two(d.getHours())+':'+two(d.getMinutes()); }
+function weekRange(offset){ // offset=0 本周, -1 上周。返回 [周一, 周日]
+  var d=new Date(); d.setHours(0,0,0,0);
+  var day=(d.getDay()+6)%7; // 周一=0
+  var mon=new Date(d); mon.setDate(d.getDate()-day + offset*7);
+  var sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  return [fmt(mon), fmt(sun)];
+}
+function fmt(d){ return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate()); }
+function monthRange(){ var d=new Date(); return [d.getFullYear()+'-'+two(d.getMonth()+1)+'-01', todayStr()]; }
+
+/* ---- 通用 toast ---- */
+var toastTimer=null;
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ t.classList.remove('show'); },1800);
+}
+
+/* ---- Tab 切换 ---- */
+function switchTab(name, btn){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.tabbar button').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  if(name==='record') renderRecords();
+  if(name==='analysis'){ renderAnalysis(); drawRadar(); }
+  if(name==='life') renderLife();
+  if(name==='report') renderReportPage();
+}
+
+/* ============================================================
+   孩子管理
+   ============================================================ */
+function addChild(){
+  var name=document.getElementById('k-name').value.trim();
+  var grade=document.getElementById('k-grade').value.trim()||'中班';
+  if(!name){ toast('请输入孩子名字'); return; }
+  var db=load();
+  db.children.push({ id: Date.now().toString(), name:name, grade:grade, createdAt:new Date().toISOString() });
+  save(db);
+  document.getElementById('k-name').value='';
+  renderAll();
+  toast('已添加 '+name+' ✅');
+}
+function deleteChild(id){
+  var db=load();
+  if(!confirm('确定删除这个孩子？其所有记录也会一并删除。')) return;
+  db.children=db.children.filter(function(c){ return c.id!==id; });
+  db.records=db.records.filter(function(r){ return r.childId!==id; });
+  save(db);
+  renderAll();
+  toast('已删除');
+}
+function renderChildrenSelects(){
+  var db=load();
+  var opts='';
+  if(db.children.length===0){ opts='<option value="">（请先添加孩子）</option>'; }
+  else{
+    db.children.forEach(function(c){
+      opts+='<option value="'+c.id+'">'+c.name+'（'+c.grade+'）</option>';
+    });
+  }
+  ['r-child','a-child','w-child'].forEach(function(id){ document.getElementById(id).innerHTML=opts; });
+  renderKidList(db);
+}
+function renderKidList(db){
+  var el=document.getElementById('kid-list');
+  if(db.children.length===0){ el.innerHTML='<div class="empty">还没有孩子，先添加吧</div>'; return; }
+  var colors=['#FF8F00','#0072BC','#43A047','#E91E63','#7B1FA2','#00ACC1'];
+  el.innerHTML=db.children.map(function(c,i){
+    var color=colors[i%colors.length];
+    return '<div class="kid-row"><div class="info">'+
+      '<div class="avatar" style="background:'+color+'">'+c.name.charAt(0)+'</div>'+
+      '<div><b>'+c.name+'</b> <span style="color:#A1887F;font-size:12px">'+c.grade+'</span></div>'+
+      '</div><button class="mini-btn danger" onclick="deleteChild(\''+c.id+'\')">删除</button></div>';
+  }).join('');
+}
+
+/* ============================================================
+   标签
+   ============================================================ */
+function renderTagPicks(){
+  var db=load();
+  var el=document.getElementById('r-tags');
+  var html='';
+  Object.keys(db.tags).forEach(function(cat){
+    db.tags[cat].forEach(function(t){
+      html+='<span class="chip" data-tag="'+t+'" onclick="toggleTagPick(this)">'+t+'</span>';
+    });
+  });
+  el.innerHTML=html;
+}
+function toggleTagPick(elm){
+  elm.classList.toggle('selected');
+}
+
+/* ============================================================
+   表征记录
+   ============================================================ */
+function saveRecord(){
+  var childSel=document.getElementById('r-child');
+  var childId=childSel.value;
+  if(!childId){ toast('请先添加并选择孩子'); return; }
+  var childName=childSel.options[childSel.selectedIndex].text.split('（')[0];
+  var area=document.getElementById('r-area').value;
+  var text=document.getElementById('r-text').value.trim();
+  if(!text){ toast('请填写孩子说了什么/做了什么'); return; }
+  var tags=[];
+  document.querySelectorAll('#r-tags .chip.selected').forEach(function(c){ tags.push(c.getAttribute('data-tag')); });
+  var db=load();
+  db.records.push({
+    id: Date.now().toString()+Math.floor(Math.random()*1000),
+    childId:childId, childName:childName, area:area, text:text, tags:tags,
+    date:todayStr(), time:nowTime(), teacherComment:''
+  });
+  save(db);
+  document.getElementById('r-text').value='';
+  document.querySelectorAll('#r-tags .chip.selected').forEach(function(c){ c.classList.remove('selected'); });
+  renderRecords();
+  toast('记录已保存 ✅');
+}
+
+/* 筛选状态 */
+var recFilter={child:'',area:''};
+function renderRecordFilters(){
+  var db=load();
+  var el=document.getElementById('rec-filter');
+  var chips='';
+  chips+='<span class="chip'+(recFilter.child===''&&recFilter.area===''?' active':'')+'" onclick="setRecFilter(\'\',\'\')">全部</span>';
+  db.children.forEach(function(c){
+    chips+='<span class="chip'+(recFilter.child===c.id?' active':'')+'" onclick="setRecFilter(\''+c.id+'\',\'all\')">'+c.name+'</span>';
+  });
+  AREAS.forEach(function(a){
+    chips+='<span class="chip'+(recFilter.area===a?' active':'')+'" onclick="setRecFilter(\'all\',\''+a+'\')">'+a+'</span>';
+  });
+  el.innerHTML=chips;
+}
+function setRecFilter(childId,area){
+  recFilter.child = childId==='all' ? '' : childId;
+  recFilter.area = area==='all' ? '' : area;
+  renderRecords();
+}
+function renderRecords(){
+  renderRecordFilters();
+  var db=load();
+  var today=todayStr();
+  var list=db.records.filter(function(r){
+    if(r.date!==today) return false;
+    if(recFilter.child && r.childId!==recFilter.child) return false;
+    if(recFilter.area && r.area!==recFilter.area) return false;
+    return true;
+  });
+  // 按时间倒序
+  list.sort(function(a,b){ return (b.time||'').localeCompare(a.time||''); });
+  var el=document.getElementById('record-list');
+  if(list.length===0){ el.innerHTML='<div class="empty">今天还没有记录</div>'; return; }
+  el.innerHTML=list.map(function(r){
+    var tags='<span class="tag area">'+r.area+'</span>';
+    (r.tags||[]).forEach(function(t){ tags+='<span class="tag">'+t+'</span>'; });
+    var comment='';
+    if(r.teacherComment){ comment='<div class="note" style="margin-top:6px">💬 老师评语：'+r.teacherComment+'</div>'; }
+    return '<div class="card record-item">'+
+      '<div class="meta"><b>'+r.childName+'</b><span>'+r.time+'</span></div>'+
+      '<div class="txt">“'+r.text+'”</div>'+
+      '<div>'+tags+'</div>'+comment+
+      '<div class="record-actions" style="margin-top:8px">'+
+        '<button class="mini-btn" onclick="editComment(\''+r.id+'\')">评语</button>'+
+        '<button class="mini-btn danger" onclick="deleteRecord(\''+r.id+'\')">删除</button>'+
+      '</div></div>';
+  }).join('');
+}
+function editComment(id){
+  var db=load();
+  var r=db.records.find(function(x){ return x.id===id; });
+  if(!r) return;
+  var val=prompt('填写/修改老师评语：', r.teacherComment||'');
+  if(val===null) return;
+  r.teacherComment=val;
+  save(db);
+  renderRecords();
+  toast('评语已保存');
+}
+function deleteRecord(id){
+  var db=load();
+  if(!confirm('确定删除这条记录？')) return;
+  db.records=db.records.filter(function(r){ return r.id!==id; });
+  save(db);
+  renderRecords();
+  toast('已删除');
+}
+
+/* ============================================================
+   一日生活
+   ============================================================ */
+function renderLife(){
+  var db=load();
+  var dateInput=document.getElementById('l-date');
+  if(!dateInput.value) dateInput.value=todayStr();
+  var date=dateInput.value;
+  var day=db.daily[date]||{};
+  var open=0;
+  DEFAULT_SECTIONS.forEach(function(s){ if(day[s]) open++; });
+  document.getElementById('l-count').textContent=date+' · 已开放 '+open+'/'+DEFAULT_SECTIONS.length+' 个环节（每个环节可独立开关）';
+  var el=document.getElementById('l-sections');
+  el.innerHTML=DEFAULT_SECTIONS.map(function(s){
+    var checked=day[s]?'checked':'';
+    return '<div class="sect-row"><div><div class="sect-name">'+s+'</div>'+
+      '<div class="sect-sub">'+(checked?'已开放给家长':'未开放')+'</div></div>'+
+      '<label class="switch"><input type="checkbox" '+checked+' onchange="toggleSection(\''+date+'\',\''+s+'\',this.checked)"><span class="slider"></span></label></div>';
+  }).join('');
+}
+function toggleSection(date,name,checked){
+  var db=load();
+  if(!db.daily[date]) db.daily[date]={};
+  db.daily[date][name]=!!checked;
+  save(db);
+  renderLife();
+  toast((checked?'已开放':'已关闭')+'：'+name);
+}
+document.getElementById('l-date').addEventListener('change', renderLife);
+
+/* ============================================================
+   能力分析
+   ============================================================ */
+function selectedChildId(){ return document.getElementById('a-child').value; }
+
+function renderAnalysis(){
+  var db=load();
+  var id=selectedChildId();
+  var el=document.getElementById('a-domains');
+  var html='';
+  DOMAINS.forEach(function(dom){
+    var val=db.analysis[id] && db.analysis[id].domains && db.analysis[id].domains[dom.key];
+    var grade=val?val.grade:'B';
+    var strong=val?val.strong:'';
+    var advice=val?val.advice:'';
+    html+='<div class="domain-block">'+
+      '<div class="d-title"><span>'+dom.name+'</span><span class="grade-group" data-domain="'+dom.key+'">'+
+        GRADES.map(function(g){ return '<span class="grade-opt'+(g===grade?' active':'')+'" onclick="setGrade(\''+dom.key+'\',\''+g+'\')">'+g+'</span>'; }).join('')+
+      '</span></div>'+
+      '<div class="note">细分项：'+dom.hint+'</div>'+
+      '<label>优势表现（★）</label><input class="a-strong" data-domain="'+dom.key+'" placeholder="如：叙事完整、词汇丰富" value="'+strong+'">'+
+      '<label>提升建议（▶）</label><input class="a-advice" data-domain="'+dom.key+'" placeholder="如：加强攀爬跑跳" value="'+advice+'">'+
+      '</div>';
+  });
+  el.innerHTML=html;
+  renderAnalysisSummary(db,id);
+}
+function setGrade(domain,grade){
+  document.querySelectorAll('.grade-group[data-domain="'+domain+'"] .grade-opt').forEach(function(g){ g.classList.remove('active'); });
+  document.querySelectorAll('.grade-group[data-domain="'+domain+'"] .grade-opt').forEach(function(g){ if(g.textContent===grade) g.classList.add('active'); });
+}
+function currentGrades(){
+  var grades={};
+  DOMAINS.forEach(function(dom){
+    var active=document.querySelector('.grade-group[data-domain="'+dom.key+'"] .grade-opt.active');
+    grades[dom.key]= active?active.textContent:'B';
+  });
+  return grades;
+}
+function saveAnalysis(){
+  var id=selectedChildId();
+  if(!id){ toast('请先添加并选择孩子'); return; }
+  var db=load();
+  var grades=currentGrades();
+  var domains={};
+  DOMAINS.forEach(function(dom){
+    domains[dom.key]={
+      grade:grades[dom.key],
+      strong:document.querySelector('.a-strong[data-domain="'+dom.key+'"]').value.trim(),
+      advice:document.querySelector('.a-advice[data-domain="'+dom.key+'"]').value.trim()
+    };
+  });
+  db.analysis[id]={ childId:id, updatedAt:new Date().toISOString(), domains:domains };
+  save(db);
+  renderAnalysisSummary(db,id);
+  drawRadar();
+  toast('分析已保存 ✅');
+}
+function renderAnalysisSummary(db,id){
+  var el=document.getElementById('a-summary');
+  var a=db.analysis[id];
+  if(!a){
+    el.innerHTML='选择孩子并设置五个领域评级后，这里会显示整体评级、优势与建议。';
+    return;
+  }
+  var grades=currentGrades();
+  var overall=computeOverall(grades);
+  var strong=[]; var weak=[];
+  DOMAINS.forEach(function(dom){
+    var g=grades[dom.key];
+    if(GRADE_VALUES[g]>=GRADE_VALUES['B+']) strong.push(dom.name);
+    if(GRADE_VALUES[g]<=GRADE_VALUES['B-']) weak.push(dom.name);
+  });
+  var strongest=strong.slice(0,2).join('、')||'均衡发展';
+  var weakest=weak.slice(0,2).join('、')||'已较均衡';
+  el.innerHTML='整体发展：<b style="color:#0072BC">'+overall+'</b> ｜ 优势：'+strongest+' ｜ 建议关注：'+weakest;
+}
+function computeOverall(grades){
+  var vals=DOMAINS.map(function(d){ return GRADE_VALUES[grades[d.key]]||0; });
+  var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+  if(avg>=87) return 'A';
+  if(avg>=80) return 'B+';
+  if(avg>=70) return 'B';
+  if(avg>=62) return 'B-';
+  if(avg>=55) return 'C+';
+  return 'C';
+}
+function autoFromRecords(){
+  var id=selectedChildId();
+  if(!id){ toast('请先添加并选择孩子'); return; }
+  var db=load();
+  var week=weekRange(0);
+  var records=db.records.filter(function(r){ return r.childId===id && r.date>=week[0] && r.date<=week[1]; });
+  if(records.length===0){ toast('这个孩子本周还没有记录，无法自动建议'); return; }
+  var counts={};
+  records.forEach(function(r){
+    var dom=AREA_TO_DOMAIN[r.area]||'social';
+    counts[dom]=(counts[dom]||0)+1;
+  });
+  // 由频次给分：最高频 = A，其次 B+，最少 C+
+  var sorted=Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
+  var gradeMap={}; var rank=0;
+  sorted.forEach(function(dom){ gradeMap[dom]= rank===0?'A':(rank===1?'B+':'C+'); rank++; });
+  DOMAINS.forEach(function(dom){
+    var g=gradeMap[dom.key]||'C';
+    setGrade(dom.key, g);
+  });
+  toast('已按本周记录频次自动填充评级（可再手动微调）');
+  renderAnalysisSummary(db,id);
+  drawRadar();
+}
+
+/* ---- 雷达图（Canvas 2D） ---- */
+function drawRadar(){
+  var grades=currentGrades();
+  var scores={};
+  DOMAINS.forEach(function(dom){ scores[dom.key]=GRADE_VALUES[grades[dom.key]]||70; });
+  paintRadar('radar', scores);
+}
+function drawRadarPV(scores){
+  paintRadar('radar-pv', scores);
+}
+function paintRadar(canvasId, scores){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  var ctx=canvas.getContext('2d');
+  var W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  // 高DPI适配
+  var dpr=window.devicePixelRatio||1;
+  if(canvas.clientWidth>0 && canvas.width!==canvas.clientWidth*dpr){
+    canvas.width=canvas.clientWidth*dpr;
+    canvas.height=canvas.clientHeight*dpr;
+    W=canvas.width; H=canvas.height;
+    ctx.scale(dpr,dpr);
+  }
+  var cx=W/2, cy=H/2;
+  var R=Math.min(W,H)/2 - 34;
+  var fields=DOMAINS.map(function(d){return d.key;});
+  // 3层网格 + 轴线
+  for(var ring=1; ring<=3; ring++){
+    ctx.beginPath();
+    for(var i=0;i<5;i++){
+      var angle=-Math.PI/2 + i*2*Math.PI/5;
+      var r=R*ring/3;
+      var x=cx+r*Math.cos(angle), y=cy+r*Math.sin(angle);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle='#E0C97F'; ctx.lineWidth=1; ctx.stroke();
+  }
+  for(var i2=0;i2<5;i2++){
+    var a=-Math.PI/2 + i2*2*Math.PI/5;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(a), cy+R*Math.sin(a));
+    ctx.strokeStyle='#EEE2C3'; ctx.stroke();
+  }
+  // 数据多边形
+  ctx.beginPath();
+  for(var j=0;j<5;j++){
+    var angle2=-Math.PI/2 + j*2*Math.PI/5;
+    var val=Math.max(0,Math.min(100,scores[fields[j]]||0));
+    var rr=R*val/100;
+    var x2=cx+rr*Math.cos(angle2), y2=cy+rr*Math.sin(angle2);
+    if(j===0) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+  }
+  ctx.closePath();
+  ctx.fillStyle='rgba(255,215,0,0.35)'; ctx.fill();
+  ctx.strokeStyle='#FF8F00'; ctx.lineWidth=2; ctx.stroke();
+  // 顶点
+  ctx.fillStyle='#5D4037'; ctx.font='13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(var k=0;k<5;k++){
+    var angle3=-Math.PI/2 + k*2*Math.PI/5;
+    var x3=cx+(R+16)*Math.cos(angle3), y3=cy+(R+16)*Math.sin(angle3);
+    ctx.fillText(DOMAINS[k].name, x3, y3);
+  }
+}
+
+/* ============================================================
+   周报
+   ============================================================ */
+function renderReportPage(){
+  var db=load();
+  var el=document.getElementById('w-child');
+  var opts='';
+  if(db.children.length===0){ opts='<option value="">（请先添加孩子）</option>'; }
+  else db.children.forEach(function(c){ opts+='<option value="'+c.id+'">'+c.name+'（'+c.grade+'）</option>'; });
+  el.innerHTML=opts;
+}
+document.getElementById('w-period').addEventListener('change', function(){
+  document.getElementById('w-custom').style.display = this.value==='custom' ? 'flex' : 'none';
+});
+function getPeriodRange(){
+  var p=document.getElementById('w-period').value;
+  if(p==='week') return weekRange(0);
+  if(p==='lastweek') return weekRange(-1);
+  if(p==='month') return monthRange();
+  var s=document.getElementById('w-start').value;
+  var e=document.getElementById('w-end').value;
+  if(!s||!e){ toast('自定义时段请选择起止日期'); return null; }
+  if(s>e){ toast('开始日期不能晚于结束日期'); return null; }
+  return [s,e];
+}
+function recordsInRange(db, childId, start, end){
+  return db.records.filter(function(r){ return r.childId===childId && r.date>=start && r.date<=end; });
+}
+function genReport(){
+  var db=load();
+  var sel=document.getElementById('w-child');
+  var childId=sel.value;
+  if(!childId){ toast('请先添加并选择孩子'); return; }
+  var childName=sel.options[sel.selectedIndex].text.split('（')[0];
+  var range=getPeriodRange();
+  if(!range) return;
+  var start=range[0], end=range[1];
+  var records=recordsInRange(db,childId,start,end);
+  if(records.length===0){ toast('这个孩子该时段还没有记录'); document.getElementById('w-out').value=''; renderPreview(null); return; }
+
+  // 1. 按区域分组统计
+  var byArea={};
+  records.forEach(function(r){ (byArea[r.area]=byArea[r.area]||[]).push(r); });
+  var areaLines=Object.keys(byArea).sort(function(a,b){ return byArea[b].length-byArea[a].length; })
+    .map(function(area){
+      var rs=byArea[area];
+      var quote=rs[rs.length-1].text.slice(0,50);
+      return '【'+area+'】本周参与 '+rs.length+' 次。代表性表现：「'+quote+'…」';
+    });
+
+  // 2. 兴趣偏好
+  var interestText=buildInterest(db,childId,start,end);
+
+  // 3. 能力分析（取已保存分析，否则按记录频次）
+  var a=db.analysis[childId];
+  var analysisText='';
+  if(a && a.domains){
+    var grades={}; DOMAINS.forEach(function(d){ grades[d.key]=a.domains[d.key]?a.domains[d.key].grade:'B'; });
+    var overall=computeOverall(grades);
+    var strong=[]; DOMAINS.forEach(function(d){ if(GRADE_VALUES[grades[d.key]]>=80) strong.push(d.name); });
+    analysisText='整体发展：'+overall+' ｜ 优势：'+(strong.slice(0,2).join('、')||'均衡')+'（依据《3-6岁儿童学习与发展指南》五大领域）';
+  }
+
+  // 4. 家园共育建议（按区域频次给模板建议）
+  var adviceText=buildAdvice(byArea);
+
+  // 5. 教师寄语
+  var note=document.getElementById('w-note').value.trim();
+
+  var lines=[];
+  lines.push('🌟 '+childName+' 本周成长周报（'+start+' ~ '+end+'）');
+  lines.push('本周共记录 '+records.length+' 个精彩瞬间：');
+  if(document.getElementById('c-orig').checked) lines.push(areaLines.join('\n\n'));
+  if(document.getElementById('c-interest').checked) lines.push('\n📌 本周兴趣偏好：\n'+interestText);
+  if(document.getElementById('c-analysis').checked) lines.push('\n💡 能力发展分析：\n'+analysisText);
+  if(document.getElementById('c-advice').checked) lines.push('\n🏠 家园共育建议：\n'+adviceText);
+  if(document.getElementById('c-note').checked) lines.push('\n💌 教师寄语：'+(note||'________________'));
+  lines.push('\n如想了解更多细节，欢迎和老师交流～');
+
+  document.getElementById('w-out').value=lines.join('\n');
+  renderPreview({childName:childName, start:start, end:end, records:records, byArea:byArea, interest:interestText, analysis:analysisText, advice:adviceText, note:note, grades: a&&a.domains});
+  toast('周报已生成，可点击复制发送给家长');
+}
+
+function buildInterest(db,childId,start,end){
+  var records=recordsInRange(db,childId,start,end);
+  var cnt={};
+  records.forEach(function(r){ cnt[r.area]=(cnt[r.area]||0)+1; });
+  var sorted=Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a]; });
+  if(sorted.length===0) return '—';
+  var most=sorted[0];
+  var lines=[];
+  lines.push('最常去：'+most+'（'+cnt[most]+'次）'+(sorted[1]?'、'+sorted[1]+'（'+cnt[sorted[1]]+'次）':''));
+  // 新探索（最近一次参与的区域，且次数<=1）
+  var explored=sorted.filter(function(a){ return cnt[a]===1; }).slice(0,1);
+  if(explored.length) lines.push('新探索：'+explored[0]+'（首次尝试）');
+  // 回避：没去过的区域
+  var all=AREAS.slice();
+  var visited=new Set(sorted);
+  var avoid=all.filter(function(a){ return !visited.has(a); }).slice(0,1);
+  if(avoid.length) lines.push('回避：'+avoid[0]+' — 可用游戏方式引入');
+  return lines.join('\n');
+}
+function buildAdvice(byArea){
+  var advice=[];
+  if(byArea['建构区']) advice.push('1. 周末多玩搭积木/拼插游戏，锻炼空间与建构能力');
+  if(byArea['美工区']) advice.push('2. 提供更多绘画与手工材料，鼓励自由创作表达');
+  if(byArea['角色区']) advice.push('3. 在家玩“过家家”角色扮演，发展社会交往与语言');
+  if(byArea['阅读区']) advice.push('4. 亲子共读绘本，鼓励复述故事、丰富词汇');
+  if(byArea['益智区']) advice.push('5. 玩分类、排序、计数游戏，发展数学思维');
+  if(byArea['科学区']) advice.push('6. 多亲近自然，观察动植物，保护好奇心');
+  if(byArea['科学区']||byArea['益智区']) advice.push('7. 坚持户外运动，加强大肌肉锻炼');
+  if(advice.length===0) advice.push('1. 多与孩子交流，鼓励表达今天在园做了什么');
+  return advice.join('\n');
+}
+function copyReport(){
+  var ta=document.getElementById('w-out');
+  if(!ta.value){ toast('请先生成周报'); return; }
+  ta.select(); ta.setSelectionRange(0,99999);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){ toast('已复制，去微信粘贴发送吧 📋'); }, function(){ fallbackCopy(ta); });
+  } else { fallbackCopy(ta); }
+}
+function fallbackCopy(ta){
+  try{ document.execCommand('copy'); toast('已复制，去微信粘贴发送吧 📋'); }
+  catch(e){ toast('复制失败，请手动长按复制'); }
+}
+
+/* 家长端预览 */
+function renderPreview(data){
+  var el=document.getElementById('preview');
+  if(!data){
+    el.innerHTML='<div class="p-title">本周兴趣偏好</div><div class="note">—</div><div class="p-title">五大领域发展雷达图</div><div class="note">—</div><div class="p-title">家园共育建议</div><div class="note">—</div><div class="p-title">教师寄语</div><div class="note">—</div>';
+    return;
+  }
+  var grades={};
+  if(data.grades){ DOMAINS.forEach(function(d){ grades[d.key]=data.grades[d.key]?data.grades[d.key].grade:'B'; }); }
+  else { data.byArea && Object.keys(data.byArea).forEach(function(ar){ grades[AREA_TO_DOMAIN[ar]]=grades[AREA_TO_DOMAIN[ar]]||'A'; }); }
+  var scores={}; DOMAINS.forEach(function(d){ scores[d.key]=GRADE_VALUES[grades[d.key]]||70; });
+  el.innerHTML=
+    '<div class="p-title">本周兴趣偏好</div><div class="note">'+(data.interest||'—').replace(/\n/g,'<br>')+'</div>'+
+    '<div class="p-title">五大领域发展雷达图</div>'+
+    '<div class="radar-wrap"><canvas id="radar-pv" height="300"></canvas></div>'+
+    '<div class="p-title">家园共育建议</div><div class="note">'+(data.advice||'—').replace(/\n/g,'<br>')+'</div>'+
+    '<div class="p-title">教师寄语</div><div class="note">"'+data.note+'"</div>';
+  setTimeout(function(){ paintRadar('radar-pv', scores); },30);
+}
+
+/* ============================================================
+   标签管理
+   ============================================================ */
+function renderTagManager(){
+  var db=load();
+  var el=document.getElementById('tag-manager');
+  var html='';
+  Object.keys(db.tags).forEach(function(cat){
+    html+='<div class="cat-title">'+cat+'</div><div class="tag-list">';
+    db.tags[cat].forEach(function(t){
+      html+='<span class="tag-chip">'+t+'<span class="x" onclick="delTag(\''+cat+'\',\''+t.replace(/'/g,"\\'")+'\')">✕</span></span>';
+    });
+    html+='<span class="tag-chip" style="background:#FFF3CD;color:#B8860B;cursor:pointer" onclick="addTagPrompt(\''+cat+'\')">＋ 添加</span>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function delTag(cat, tag){
+  var db=load();
+  db.tags[cat]=db.tags[cat].filter(function(t){ return t!==tag; });
+  save(db); renderTagManager(); renderTagPicks();
+}
+function addTagPrompt(cat){
+  var t=prompt('输入新标签（回车确认）：');
+  if(!t) return;
+  t=t.trim();
+  if(!t) return;
+  var db=load();
+  if(db.tags[cat].indexOf(t)>-1){ toast('该标签已存在'); return; }
+  db.tags[cat].push(t);
+  save(db); renderTagManager(); renderTagPicks(); toast('已添加');
+}
+function resetTags(){
+  if(!confirm('恢复默认标签？会清掉当前自定义标签。')) return;
+  var db=load();
+  db.tags=JSON.parse(JSON.stringify(DEFAULT_TAGS));
+  save(db); renderTagManager(); renderTagPicks(); toast('已重置默认标签');
+}
+
+/* ============================================================
+   数据备份
+   ============================================================ */
+function exportData(){
+  var db=load();
+  var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='家园沟通站备份-'+todayStr()+'.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('已导出备份文件，请妥善保存');
+}
+function importData(e){
+  var file=e.target.files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var obj=JSON.parse(reader.result);
+      if(!obj || typeof obj!=='object' || !Array.isArray(obj.children) || !Array.isArray(obj.records)){
+        toast('备份文件格式不正确'); return;
+      }
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+      renderAll();
+      toast('导入成功 ✅');
+    }catch(err){ toast('导入失败：文件不是有效JSON'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+function clearData(){
+  if(!confirm('确定清空本机所有数据？此操作不可恢复（建议先导出备份）。')) return;
+  localStorage.removeItem(STORE_KEY);
+  renderAll();
+  toast('已清空');
+}
+
+/* ============================================================
+   全局渲染 & 初始化
+   ============================================================ */
+function renderAll(){
+  var db=load();
+  // 区域下拉
+  var areaSel=document.getElementById('r-area');
+  areaSel.innerHTML=AREAS.map(function(a){ return '<option>'+a+'</option>'; }).join('');
+  renderChildrenSelects();
+  renderTagPicks();
+  renderRecords();
+  renderLife();
+  renderAnalysis();
+  drawRadar();
+  renderReportPage();
+  renderTagManager();
+}
+
+/* 注册 Service Worker（仅 https 或 localhost 生效） */
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(e){ console.log('SW注册失败（不影响使用）', e); });
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "家园沟通站",
+  "short_name": "家园站",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFF8E1",
+  "theme_color": "#FFD700",
+  "description": "老师个人的家园沟通工作台：记录孩子表征、分析五大领域、管理一日生活、生成周报",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
