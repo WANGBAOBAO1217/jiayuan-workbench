@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#FFD700">
+  <meta name="theme-color" content="#FF8A5C">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -12,7 +12,7 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { margin: 0; padding: 0; }
     body {
-      background: #FFF8E1;
+      background: #FFF6F0;
       color: #5D4037;
       font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
       padding-bottom: 74px;
@@ -20,7 +20,7 @@
     }
     /* 顶部 */
     .app-header {
-      background: linear-gradient(135deg, #FFD700 0%, #FFC400 100%);
+      background: linear-gradient(135deg, #FFC37E 0%, #FF8A80 100%);
       padding: 20px 18px 16px;
       color: #5D4037;
     }
@@ -31,31 +31,31 @@
 
     /* 卡片 */
     .card {
-      background: #fff; border-radius: 16px; padding: 16px;
-      margin-bottom: 14px; box-shadow: 0 2px 8px rgba(93,64,55,.08);
+      background: #fff; border-radius: 20px; padding: 16px;
+      margin-bottom: 14px; box-shadow: 0 4px 14px rgba(255,138,92,.12);
     }
-    .card h3 { margin: 0 0 12px; font-size: 16px; }
-    .card h4 { margin: 14px 0 8px; font-size: 14px; color: #0072BC; }
+    .card h3 { margin: 0 0 12px; font-size: 16px; color: #E26D5C; }
+    .card h4 { margin: 14px 0 8px; font-size: 14px; color: #FF8A5C; }
 
     label { font-size: 13px; color: #8D6E63; display: block; margin: 8px 0 4px; }
     input, textarea, select {
       width: 100%; box-sizing: border-box; padding: 11px;
-      border: 1.5px solid #E0C97F; border-radius: 10px; font-size: 16px;
-      margin: 2px 0 6px; background: #FFFDF5; color: #5D4037;
+      border: 1.5px solid #FFD9BF; border-radius: 12px; font-size: 16px;
+      margin: 2px 0 6px; background: #FFFDF8; color: #5D4037;
     }
     textarea { resize: vertical; line-height: 1.5; }
     select { appearance: none; background-image: linear-gradient(45deg,transparent 50%,#8D6E63 50%),linear-gradient(135deg,#8D6E63 50%,transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
     .btn {
-      display: inline-block; width: 100%; padding: 13px; border: none; border-radius: 12px;
-      background: #FFD700; color: #5D4037; font-size: 16px; font-weight: 700; cursor: pointer;
+      display: inline-block; width: 100%; padding: 13px; border: none; border-radius: 16px;
+      background: #FF8A5C; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
       transition: filter .15s;
     }
     .btn:active { filter: brightness(.94); }
     .btn:disabled { opacity: .5; }
-    .btn.blue { background: #0072BC; color: #fff; }
-    .btn.green { background: #43A047; color: #fff; }
-    .btn.gray { background: #ECEFF1; color: #5D4037; }
-    .btn.sm { width: auto; padding: 8px 14px; font-size: 14px; border-radius: 9px; }
+    .btn.blue { background: #5FC6E8; color: #fff; }
+    .btn.green { background: #6FCF7A; color: #fff; }
+    .btn.gray { background: #F3E9E2; color: #5D4037; }
+    .btn.sm { width: auto; padding: 8px 14px; font-size: 14px; border-radius: 12px; }
 
     .row { display: flex; gap: 10px; }
     .row > * { flex: 1; }
@@ -73,28 +73,28 @@
       align-items: center; gap: 3px;
     }
     .tabbar button .ic { font-size: 20px; line-height: 1; }
-    .tabbar button.active { color: #FF8F00; font-weight: 700; }
+    .tabbar button.active { color: #FF7A59; font-weight: 700; }
 
     /* 记录 */
     .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     .chip {
-      padding: 6px 13px; border-radius: 20px; background: #fff; border: 1.5px solid #E0C97F;
+      padding: 6px 13px; border-radius: 22px; background: #fff; border: 1.5px solid #FFD9BF;
       font-size: 13px; color: #8D6E63; cursor: pointer;
     }
-    .chip.active { background: #FFD700; border-color: #FFD700; color: #5D4037; font-weight: 700; }
-    .record-item { border-left: 4px solid #FFD700; }
+    .chip.active { background: #FFC37E; border-color: #FFC37E; color: #5D4037; font-weight: 700; }
+    .record-item { border-left: 4px solid #FF8A5C; }
     .record-item .meta { color: #A1887F; font-size: 12px; margin-bottom: 6px; display: flex; justify-content: space-between; }
     .record-item .txt { font-size: 15px; line-height: 1.55; margin: 0 0 8px; }
-    .tag { display: inline-block; background: #E8F4FB; color: #0072BC; font-size: 12px; border-radius: 6px; padding: 2px 8px; margin: 2px 4px 2px 0; }
-    .tag.area { background: #FFF3CD; color: #B8860B; }
+    .tag { display: inline-block; background: #E8F6FA; color: #2FA8C9; font-size: 12px; border-radius: 6px; padding: 2px 8px; margin: 2px 4px 2px 0; }
+    .tag.area { background: #FFEBD6; color: #E07B2A; }
     .record-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .mini-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid #E0C97F; background: #FFFDF5; color: #5D4037; font-size: 13px; cursor: pointer; }
+    .mini-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #FFD9BF; background: #FFFDF8; color: #5D4037; font-size: 13px; cursor: pointer; }
     .mini-btn.danger { color: #D32F2F; border-color: #F5C6C6; }
     .empty { color: #BDB5A8; text-align: center; padding: 22px 0; font-size: 14px; }
 
     /* 标签选择 chips */
     .tagpick { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
-    .tagpick .chip.selected { background: #0072BC; border-color: #0072BC; color: #fff; }
+    .tagpick .chip.selected { background: #2FA8C9; border-color: #2FA8C9; color: #fff; }
 
     /* 录音 */
     .rec-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 6px; }
@@ -109,19 +109,19 @@
     .rec-btn.recording .rec-dot { background: #fff; }
     .rec-status { font-size: 13px; color: #A1887F; }
     .audio-ply {
-      width: auto; padding: 7px 12px; border: 1px solid #E0C97F; background: #FFFDF5;
-      border-radius: 8px; font-size: 13px; color: #0072BC; cursor: pointer;
+      width: auto; padding: 7px 12px; border: 1px solid #FFD9BF; background: #FFFDF8;
+      border-radius: 10px; font-size: 13px; color: #2FA8C9; cursor: pointer;
     }
 
     /* 照片 */
     .photo-upload { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .photo-btn {
-      width: auto; padding: 11px 18px; border: 1.5px dashed #E0C97F; background: #FFFDF5;
-      border-radius: 12px; font-size: 14px; color: #5D4037; cursor: pointer; display: inline-block;
+      width: auto; padding: 11px 18px; border: 1.5px dashed #FFD9BF; background: #FFFDF8;
+      border-radius: 14px; font-size: 14px; color: #5D4037; cursor: pointer; display: inline-block;
     }
     .thumb-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .thumb { position: relative; width: 84px; height: 84px; }
-    .thumb img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid #E0C97F; }
+    .thumb img { width: 84px; height: 84px; object-fit: cover; border-radius: 12px; border: 1px solid #FFD9BF; }
     .thumb .x { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; line-height: 18px; text-align: center; background: #D32F2F; color: #fff; border-radius: 50%; font-size: 13px; cursor: pointer; }
     .record-photos { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
     .record-photos img { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #EEE2C3; }
@@ -148,31 +148,29 @@
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
     /* 分析 */
-    .domain-block { border: 1px solid #E0C97F; border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #FFFDF5; }
+    .domain-block { border: 1px solid #FFD9BF; border-radius: 14px; padding: 12px; margin-bottom: 12px; background: #FFFDF8; }
     .domain-block .d-title { font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .grade-group { display: flex; gap: 6px; }
-    .grade-opt {
-      flex: 1; text-align: center; padding: 8px 0; border: 1.5px solid #E0C97F; border-radius: 8px;
-      font-size: 14px; color: #8D6E63; cursor: pointer; background: #fff;
-    }
-    .grade-opt.active { background: #0072BC; border-color: #0072BC; color: #fff; font-weight: 700; }
+    .star-group { display: flex; gap: 4px; }
+    .star { font-size: 26px; color: #F0E2D3; cursor: pointer; transition: transform .1s; line-height: 1; }
+    .star.on { color: #FFB020; text-shadow: 0 0 6px rgba(255,176,32,.5); }
+    .star:hover { transform: scale(1.2); }
     .radar-wrap { display: flex; justify-content: center; }
     canvas#radar { width: 100%; max-width: 320px; }
 
     /* 周报 */
     .period-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
     .report-out { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
-    .preview-block { background: #FFFDF5; border: 1px solid #E0C97F; border-radius: 12px; padding: 14px; }
-    .preview-block .p-title { font-weight: 700; color: #0072BC; margin: 12px 0 6px; font-size: 14px; }
+    .preview-block { background: #FFFDF8; border: 1px solid #FFD9BF; border-radius: 14px; padding: 14px; }
+    .preview-block .p-title { font-weight: 700; color: #FF7A59; margin: 12px 0 6px; font-size: 14px; }
     .checklist { margin: 4px 0 8px; }
     .checklist label { font-size: 14px; display: flex; align-items: center; gap: 8px; margin: 6px 0; }
     .checklist input { width: 18px; height: 18px; margin: 0; }
 
     /* 我的 */
-    .tag-mgr .cat-title { font-weight: 700; margin: 14px 0 6px; color: #0072BC; }
+    .tag-mgr .cat-title { font-weight: 700; margin: 14px 0 6px; color: #FF7A59; }
     .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-chip { display: inline-flex; align-items: center; gap: 6px; background: #E8F4FB; color: #0072BC; border-radius: 8px; padding: 5px 10px; font-size: 13px; }
-    .tag-chip .x { cursor: pointer; color: #0072BC; font-weight: 700; }
+    .tag-chip { display: inline-flex; align-items: center; gap: 6px; background: #E8F6FA; color: #2FA8C9; border-radius: 8px; padding: 5px 10px; font-size: 13px; }
+    .tag-chip .x { cursor: pointer; color: #2FA8C9; font-weight: 700; }
     .kid-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 2px; border-bottom: 1px solid #F1EAD9; }
     .kid-row .info { display: flex; align-items: center; gap: 10px; }
     .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 18px; }
@@ -381,6 +379,15 @@ var DOMAINS = [
 ];
 var GRADE_VALUES = { 'A+':97,'A':90,'A-':85,'B+':80,'B':75,'B-':70,'C+':65,'C':58,'C-':50 };
 var GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-'];
+/* 五颗星打分：star=1~5，映射到雷达图分数 */
+var STAR_SCORE = {1:55, 2:65, 3:75, 4:85, 5:95};
+var GRADE_TO_STAR = {'A+':5,'A':5,'A-':4,'B+':4,'B':3,'B-':3,'C+':2,'C':2,'C-':1};
+function starFromVal(val){ // val 可能是新版 {star} 或旧版 {grade}
+  if(val && val.star) return val.star;
+  if(val && val.grade) return GRADE_TO_STAR[val.grade]||3;
+  return 3;
+}
+function starToScore(star){ return STAR_SCORE[star]||70; }
 var DEFAULT_TAGS = {
   '餐点':['好好吃饭','需要鼓励'],
   '户外':['跑跳','团队游戏'],
@@ -889,12 +896,12 @@ function renderAnalysis(){
   var html='';
   DOMAINS.forEach(function(dom){
     var val=db.analysis[id] && db.analysis[id].domains && db.analysis[id].domains[dom.key];
-    var grade=val?val.grade:'B';
+    var star=val?starFromVal(val):3;
     var strong=val?val.strong:'';
     var advice=val?val.advice:'';
     html+='<div class="domain-block">'+
-      '<div class="d-title"><span>'+dom.name+'</span><span class="grade-group" data-domain="'+dom.key+'">'+
-        GRADES.map(function(g){ return '<span class="grade-opt'+(g===grade?' active':'')+'" onclick="setGrade(\''+dom.key+'\',\''+g+'\')">'+g+'</span>'; }).join('')+
+      '<div class="d-title"><span>'+dom.name+'</span><span class="star-group" data-domain="'+dom.key+'">'+
+        [1,2,3,4,5].map(function(s){ return '<span class="star'+(s<=star?' on':'')+'" data-star="'+s+'" onclick="setStar(\''+dom.key+'\','+s+')">★</span>'; }).join('')+
       '</span></div>'+
       '<div class="note">细分项：'+dom.hint+'</div>'+
       '<label>优势表现（★）</label><input class="a-strong" data-domain="'+dom.key+'" placeholder="如：叙事完整、词汇丰富" value="'+strong+'">'+
@@ -904,27 +911,26 @@ function renderAnalysis(){
   el.innerHTML=html;
   renderAnalysisSummary(db,id);
 }
-function setGrade(domain,grade){
-  document.querySelectorAll('.grade-group[data-domain="'+domain+'"] .grade-opt').forEach(function(g){ g.classList.remove('active'); });
-  document.querySelectorAll('.grade-group[data-domain="'+domain+'"] .grade-opt').forEach(function(g){ if(g.textContent===grade) g.classList.add('active'); });
+function setStar(domain,star){
+  document.querySelectorAll('.star-group[data-domain="'+domain+'"] .star').forEach(function(s, i){ s.classList.toggle('on', i < star); });
 }
-function currentGrades(){
-  var grades={};
+function currentStars(){
+  var stars={};
   DOMAINS.forEach(function(dom){
-    var active=document.querySelector('.grade-group[data-domain="'+dom.key+'"] .grade-opt.active');
-    grades[dom.key]= active?active.textContent:'B';
+    var on=document.querySelectorAll('.star-group[data-domain="'+dom.key+'"] .star.on').length;
+    stars[dom.key]= on||3;
   });
-  return grades;
+  return stars;
 }
 function saveAnalysis(){
   var id=selectedChildId();
   if(!id){ toast('请先添加并选择孩子'); return; }
   var db=load();
-  var grades=currentGrades();
+  var stars=currentStars();
   var domains={};
   DOMAINS.forEach(function(dom){
     domains[dom.key]={
-      grade:grades[dom.key],
+      star:stars[dom.key],
       strong:document.querySelector('.a-strong[data-domain="'+dom.key+'"]').value.trim(),
       advice:document.querySelector('.a-advice[data-domain="'+dom.key+'"]').value.trim()
     };
@@ -939,30 +945,28 @@ function renderAnalysisSummary(db,id){
   var el=document.getElementById('a-summary');
   var a=db.analysis[id];
   if(!a){
-    el.innerHTML='选择孩子并设置五个领域评级后，这里会显示整体评级、优势与建议。';
+    el.innerHTML='选择孩子并设置五个领域星评后，这里会显示整体评级、优势与建议。';
     return;
   }
-  var grades=currentGrades();
-  var overall=computeOverall(grades);
+  var stars=currentStars();
+  var overall=computeOverall(stars);
   var strong=[]; var weak=[];
   DOMAINS.forEach(function(dom){
-    var g=grades[dom.key];
-    if(GRADE_VALUES[g]>=GRADE_VALUES['B+']) strong.push(dom.name);
-    if(GRADE_VALUES[g]<=GRADE_VALUES['B-']) weak.push(dom.name);
+    var s=stars[dom.key];
+    if(s>=4) strong.push(dom.name);
+    if(s<=2) weak.push(dom.name);
   });
   var strongest=strong.slice(0,2).join('、')||'均衡发展';
   var weakest=weak.slice(0,2).join('、')||'已较均衡';
-  el.innerHTML='整体发展：<b style="color:#0072BC">'+overall+'</b> ｜ 优势：'+strongest+' ｜ 建议关注：'+weakest;
+  el.innerHTML='整体发展：<b style="color:#FF7A59">'+overall+'</b> ｜ 优势：'+strongest+' ｜ 建议关注：'+weakest;
 }
-function computeOverall(grades){
-  var vals=DOMAINS.map(function(d){ return GRADE_VALUES[grades[d.key]]||0; });
+function computeOverall(stars){
+  var vals=DOMAINS.map(function(d){ return STAR_SCORE[stars[d.key]]||70; });
   var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-  if(avg>=87) return 'A';
-  if(avg>=80) return 'B+';
-  if(avg>=70) return 'B';
-  if(avg>=62) return 'B-';
-  if(avg>=55) return 'C+';
-  return 'C';
+  if(avg>=85) return '优秀';
+  if(avg>=72) return '良好';
+  if(avg>=60) return '中等';
+  return '需关注';
 }
 function autoFromRecords(){
   var id=selectedChildId();
@@ -976,24 +980,23 @@ function autoFromRecords(){
     var dom=AREA_TO_DOMAIN[r.area]||'social';
     counts[dom]=(counts[dom]||0)+1;
   });
-  // 由频次给分：最高频 = A，其次 B+，最少 C+
+  // 由频次给星：最高频 = 5星，其次 4星，最少 2星
   var sorted=Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
-  var gradeMap={}; var rank=0;
-  sorted.forEach(function(dom){ gradeMap[dom]= rank===0?'A':(rank===1?'B+':'C+'); rank++; });
+  var starMap={}; var rank=0;
+  sorted.forEach(function(dom){ starMap[dom]= rank===0?5:(rank===1?4:2); rank++; });
   DOMAINS.forEach(function(dom){
-    var g=gradeMap[dom.key]||'C';
-    setGrade(dom.key, g);
+    setStar(dom.key, starMap[dom.key]||2);
   });
-  toast('已按本周记录频次自动填充评级（可再手动微调）');
+  toast('已按本周记录频次自动填充星星（可再手动微调）');
   renderAnalysisSummary(db,id);
   drawRadar();
 }
 
 /* ---- 雷达图（Canvas 2D） ---- */
 function drawRadar(){
-  var grades=currentGrades();
+  var stars=currentStars();
   var scores={};
-  DOMAINS.forEach(function(dom){ scores[dom.key]=GRADE_VALUES[grades[dom.key]]||70; });
+  DOMAINS.forEach(function(dom){ scores[dom.key]=STAR_SCORE[stars[dom.key]]||70; });
   paintRadar('radar', scores);
 }
 function drawRadarPV(scores){
@@ -1111,9 +1114,9 @@ function genReport(){
   var a=db.analysis[childId];
   var analysisText='';
   if(a && a.domains){
-    var grades={}; DOMAINS.forEach(function(d){ grades[d.key]=a.domains[d.key]?a.domains[d.key].grade:'B'; });
-    var overall=computeOverall(grades);
-    var strong=[]; DOMAINS.forEach(function(d){ if(GRADE_VALUES[grades[d.key]]>=80) strong.push(d.name); });
+    var stars={}; DOMAINS.forEach(function(d){ stars[d.key]=a.domains[d.key]?starFromVal(a.domains[d.key]):3; });
+    var overall=computeOverall(stars);
+    var strong=[]; DOMAINS.forEach(function(d){ if(stars[d.key]>=4) strong.push(d.name); });
     analysisText='整体发展：'+overall+' ｜ 优势：'+(strong.slice(0,2).join('、')||'均衡')+'（依据《3-6岁儿童学习与发展指南》五大领域）';
   }
 
@@ -1189,10 +1192,10 @@ function renderPreview(data){
     el.innerHTML='<div class="p-title">本周兴趣偏好</div><div class="note">—</div><div class="p-title">五大领域发展雷达图</div><div class="note">—</div><div class="p-title">家园共育建议</div><div class="note">—</div><div class="p-title">教师寄语</div><div class="note">—</div>';
     return;
   }
-  var grades={};
-  if(data.grades){ DOMAINS.forEach(function(d){ grades[d.key]=data.grades[d.key]?data.grades[d.key].grade:'B'; }); }
-  else { data.byArea && Object.keys(data.byArea).forEach(function(ar){ grades[AREA_TO_DOMAIN[ar]]=grades[AREA_TO_DOMAIN[ar]]||'A'; }); }
-  var scores={}; DOMAINS.forEach(function(d){ scores[d.key]=GRADE_VALUES[grades[d.key]]||70; });
+  var stars={};
+  if(data.grades){ DOMAINS.forEach(function(d){ stars[d.key]=data.grades[d.key]?starFromVal(data.grades[d.key]):3; }); }
+  else { data.byArea && Object.keys(data.byArea).forEach(function(ar){ stars[AREA_TO_DOMAIN[ar]]=stars[AREA_TO_DOMAIN[ar]]||5; }); }
+  var scores={}; DOMAINS.forEach(function(d){ scores[d.key]=STAR_SCORE[stars[d.key]]||70; });
   el.innerHTML=
     '<div class="p-title">本周兴趣偏好</div><div class="note">'+(data.interest||'—').replace(/\n/g,'<br>')+'</div>'+
     '<div class="p-title">五大领域发展雷达图</div>'+
@@ -1214,7 +1217,7 @@ function renderTagManager(){
     db.tags[cat].forEach(function(t){
       html+='<span class="tag-chip">'+t+'<span class="x" onclick="delTag(\''+cat+'\',\''+t.replace(/'/g,"\\'")+'\')">✕</span></span>';
     });
-    html+='<span class="tag-chip" style="background:#FFF3CD;color:#B8860B;cursor:pointer" onclick="addTagPrompt(\''+cat+'\')">＋ 添加</span>';
+    html+='<span class="tag-chip" style="background:#FFEBD6;color:#E07B2A;cursor:pointer" onclick="addTagPrompt(\''+cat+'\')">＋ 添加</span>';
     html+='</div>';
   });
   el.innerHTML=html;
